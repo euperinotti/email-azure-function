@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,14 +16,26 @@ namespace euperinotti.azure
         }
 
         [Function("HttpTrigger")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             try
             {
-                SendEmail.Execute().Wait();
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                var data = JsonSerializer.Deserialize<RequestData>(requestBody);
+
+                if (data == null || string.IsNullOrEmpty(data.Email))
+                {
+                    return new BadRequestObjectResult("Email is required.");
+                }
+
+                _logger.LogInformation($"Email received: {data.Email}");
+
+                SendEmail.Execute(data.Email).Wait();
                 _logger.LogInformation("Email sent successfully");
+
+                return new OkObjectResult($"Email sent to {data.Email}!");
             }
             catch (System.Exception)
             {
