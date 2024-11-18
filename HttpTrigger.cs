@@ -25,17 +25,17 @@ namespace euperinotti.azure
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 var data = JsonSerializer.Deserialize<RequestData>(requestBody);
 
-                if (data == null || string.IsNullOrEmpty(data.Email))
+                if (data == null || string.IsNullOrEmpty(data.toMail))
                 {
                     return new BadRequestObjectResult("Email is required.");
                 }
 
-                _logger.LogInformation($"Email received: {data.Email}");
+                _logger.LogInformation($"Email received: {data.toMail}");
 
-                SendEmail.Execute(data.Email).Wait();
+                SendEmail.Execute(data.toMail, data.content).Wait();
                 _logger.LogInformation("Email sent successfully");
 
-                return new OkObjectResult($"Email sent to {data.Email}!");
+                return new OkObjectResult($"Email sent to {data.toMail}!");
             }
             catch (System.Exception)
             {

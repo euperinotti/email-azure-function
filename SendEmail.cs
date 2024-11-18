@@ -7,15 +7,15 @@ namespace euperinotti.azure
 {
   class SendEmail
   {
-    public static async Task Execute(string email)
+    public static async Task Execute(string email, string content)
     {
       var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
       var client = new SendGridClient(apiKey);
       var from = new EmailAddress("guilherme9115@gmail.com", "Guilherme Perinotti");
-      var subject = "Sending with SendGrid is Fun";
+      var subject = "Contato de interesse";
       var to = new EmailAddress(email);
-      var plainTextContent = "and easy to do anywhere, even with C#";
-      var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+      var plainTextContent = $"{email} está interessado. \nMensagem: {content}";
+      var htmlContent = $"{email} está interessado. <br>Mensagem: {content}";
       var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
       var response = await client.SendEmailAsync(msg);
     }
